@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AppProvider, useApp } from '@/contexts/AppContext';
+import { AppProvider } from '@/contexts/AppContext';
+import { useApp } from '@/contexts/useAppContext';
 import LoginPage from '@/pages/LoginPage';
 import Dashboard from '@/pages/Dashboard';
 

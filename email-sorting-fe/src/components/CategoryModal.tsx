@@ -3,6 +3,7 @@ import { categoriesApi } from '@/utils/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import type { AxiosError } from 'axios';
 
 interface CategoryModalProps {
   onClose: () => void;
@@ -21,8 +22,8 @@ export default function CategoryModal({ onClose, onSuccess }: CategoryModalProps
     try {
       await categoriesApi.create({ name, description, color });
       onSuccess();
-    } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to create category');
+    } catch (error: unknown) {
+      alert((error as unknown as AxiosError<{ error?: string }>)?.response?.data?.error || 'Failed to create category');
     } finally {
       setLoading(false);
     }

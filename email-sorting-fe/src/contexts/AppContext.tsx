@@ -1,9 +1,10 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import type { User, Category } from '../types';
 import { authApi, categoriesApi } from '../utils/api';
+import { AppContext } from './useAppContext';
 
-interface AppContextType {
+export interface AppContextType {
   user: User | null;
   setUser: (user: User | null) => void;
   categories: Category[];
@@ -21,9 +22,7 @@ interface AppContextType {
   refreshCategories: () => Promise<void>;
 }
 
-const AppContext = createContext<AppContextType | undefined>(undefined);
-
-export function AppProvider({ children }: { children: ReactNode }) {
+export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(() => {
     // Initialize user from localStorage
     const storedUser = localStorage.getItem('user');
@@ -43,23 +42,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-  // Check authentication on mount
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const response = await authApi.getCurrentUser();
       setUser(response.data);
       await loadCategories();
-    } catch (error) {
-      console.log('Not authenticated');
+    } catch (error: unknown) {
+      console.error('Not authenticated', error);
       setUser(null);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  // Check authentication on mount
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const loadCategories = async () => {
     try {
@@ -124,12 +123,4 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
-}
-
-export function useApp() {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useApp must be used within an AppProvider');
-  }
-  return context;
 }
