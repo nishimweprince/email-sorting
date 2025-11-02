@@ -80,6 +80,7 @@ export interface EmailMessage {
   body: string;
   bodyHtml?: string;
   snippet: string;
+  headers?: Array<{ name: string; value: string }>;
 }
 
 export interface CategoryInput {
