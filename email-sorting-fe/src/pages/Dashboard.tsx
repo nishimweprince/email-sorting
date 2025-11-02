@@ -1,66 +1,51 @@
 import { useState } from 'react';
-import { useApp } from '../contexts/AppContext';
-import Sidebar from '../components/Sidebar';
-import EmailList from '../components/EmailList';
-import EmailDetail from '../components/EmailDetail';
-import type { Email } from '../types';
+import { useApp } from '@/contexts/AppContext';
+import Sidebar from '@/components/Sidebar';
+import EmailList from '@/components/EmailList';
+import EmailDetail from '@/components/EmailDetail';
+import { Button } from '@/components/ui/button';
+import type { Email } from '@/types';
 
 export default function Dashboard() {
-  const { user } = useApp();
+  const { user, logout } = useApp();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      {/* Sidebar */}
+    <div className="flex h-screen overflow-hidden bg-gray-50">
       <Sidebar
         selectedCategoryId={selectedCategoryId}
         onSelectCategory={setSelectedCategoryId}
       />
 
-      {/* Main Content */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-        {/* Header */}
-        <header style={{
-          backgroundColor: 'white',
-          borderBottom: '1px solid #e5e7eb',
-          padding: '1rem 1.5rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexShrink: 0
-        }}>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: '600', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <main className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <header className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shrink-0">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent truncate">
             AI Email Sorting
           </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
-            <span style={{ color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>{user?.email}</span>
-            <button
-              onClick={() => window.location.reload()}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: '#f3f4f6',
-                border: 'none',
-                borderRadius: '0.375rem',
-                cursor: 'pointer',
-                flexShrink: 0
-              }}
+          <div className="flex items-center gap-4 shrink-0">
+            <span className="text-gray-600 truncate max-w-[200px]">{user?.email}</span>
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="shrink-0"
             >
               Logout
-            </button>
+            </Button>
           </div>
         </header>
 
-        {/* Content Area */}
-        <section style={{ flex: 1, display: 'flex', overflow: 'hidden', minWidth: 0 }}>
-          <div style={{
-            flex: selectedEmail ? '0 1 auto' : '1',
-            minWidth: 0,
-            overflow: 'hidden',
-            maxWidth: selectedEmail ? '50%' : '100%',
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
+        <section className="flex-1 flex overflow-hidden min-w-0">
+          <div className={`min-w-0 overflow-hidden flex flex-col ${selectedEmail ? 'flex-[0_1_auto] max-w-[50%]' : 'flex-1'}`}>
             <EmailList
               categoryId={selectedCategoryId}
               onSelectEmail={setSelectedEmail}

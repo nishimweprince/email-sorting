@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useApp } from '../contexts/AppContext';
-import { emailsApi, processApi } from '../utils/api';
-import type { Email } from '../types';
+import { useApp } from '@/contexts/AppContext';
+import { emailsApi, processApi } from '@/utils/api';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import type { Email } from '@/types';
 
 interface EmailListProps {
   categoryId: string | null;
@@ -13,7 +15,6 @@ export default function EmailList({ categoryId, onSelectEmail, selectedEmailId }
   const { selectedEmails, selectEmail, deselectEmail, selectAllEmails, deselectAllEmails } = useApp();
   const [emails, setEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState(true);
-
 
   const loadEmails = useCallback(async () => {
     setLoading(true);
@@ -68,177 +69,115 @@ export default function EmailList({ categoryId, onSelectEmail, selectedEmailId }
 
   if (loading) {
     return (
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <p>Loading emails...</p>
-      </div>
+      <section className="flex-1 flex items-center justify-center">
+        <p className="text-gray-500">Loading emails...</p>
+      </section>
     );
   }
 
   return (
-    <section style={{
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: '#f9fafb',
-      overflow: 'hidden',
-      minWidth: 0
-    }}>
-      {/* Bulk Actions Bar */}
+    <section className="flex-1 flex flex-col bg-gray-50 overflow-hidden min-w-0">
       {selectedEmails.length > 0 && (
-        <nav style={{
-          padding: '0.75rem 1rem',
-          backgroundColor: '#3b82f6',
-          color: 'white',
-          display: 'flex',
-          gap: '1rem',
-          alignItems: 'center',
-          flexShrink: 0,
-          overflow: 'hidden'
-        }}>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedEmails.length} selected</span>
-          <button
+        <nav className="px-4 py-3 bg-primary-400 text-white flex gap-4 items-center shrink-0 overflow-hidden">
+          <span className="truncate">{selectedEmails.length} selected</span>
+          <Button
             onClick={handleBulkDelete}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: 'white',
-              color: '#3b82f6',
-              border: 'none',
-              borderRadius: '0.375rem',
-              cursor: 'pointer',
-              fontWeight: '500',
-              flexShrink: 0
-            }}
+            size="sm"
+            variant="secondary"
+            className="shrink-0 bg-white text-primary-500 hover:bg-gray-100"
           >
             Delete
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleBulkUnsubscribe}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: 'white',
-              color: '#3b82f6',
-              border: 'none',
-              borderRadius: '0.375rem',
-              cursor: 'pointer',
-              fontWeight: '500',
-              flexShrink: 0
-            }}
+            size="sm"
+            variant="secondary"
+            className="shrink-0 bg-white text-primary-500 hover:bg-gray-100"
           >
             Unsubscribe
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={deselectAllEmails}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              color: 'white',
-              border: '1px solid white',
-              borderRadius: '0.375rem',
-              cursor: 'pointer',
-              flexShrink: 0
-            }}
+            size="sm"
+            variant="outline"
+            className="shrink-0 bg-white/20 text-white border-white hover:bg-white/30"
           >
             Clear Selection
-          </button>
+          </Button>
         </nav>
       )}
 
-      {/* Select All */}
-      <div style={{
-        padding: '0.75rem 1rem',
-        backgroundColor: 'white',
-        borderBottom: '1px solid #e5e7eb',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        flexShrink: 0
-      }}>
+      <header className="px-4 py-3 bg-white border-b border-gray-200 flex items-center gap-2 shrink-0">
         <input
           type="checkbox"
           checked={emails.length > 0 && selectedEmails.length === emails.length}
           onChange={handleSelectAll}
-          style={{ cursor: 'pointer', flexShrink: 0 }}
+          className="cursor-pointer shrink-0"
+          id="select-all-emails"
         />
-        <span style={{ fontSize: '0.875rem', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <label htmlFor="select-all-emails" className="text-sm text-gray-600 truncate cursor-pointer">
           Select All ({emails.length})
-        </span>
-      </div>
+        </label>
+      </header>
 
-      {/* Email List */}
-      <ul style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', listStyle: 'none', margin: 0, padding: 0 }}>
+      <ul className="flex-1 overflow-y-auto overflow-x-hidden list-none m-0 p-0">
         {emails.length === 0 ? (
-          <li style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+          <li className="p-8 text-center text-gray-500">
             No emails found. Click "Sync Emails" to import from Gmail.
           </li>
         ) : (
           emails.map((email) => (
-            <article
-              key={email.id}
-              style={{
-                padding: '1rem',
-                backgroundColor: selectedEmailId === email.id ? '#f3f4f6' : 'white',
-                borderBottom: '1px solid #e5e7eb',
-                cursor: 'pointer',
-                display: 'flex',
-                gap: '0.75rem',
-                minWidth: 0
-              }}
-              onClick={() => onSelectEmail(email)}
-            >
-              <input
-                type="checkbox"
-                checked={selectedEmails.includes(email.id)}
-                onChange={(e) => {
-                  e.stopPropagation();
-                  if (selectedEmails.includes(email.id)) {
-                    deselectEmail(email.id);
-                  } else {
-                    selectEmail(email.id);
-                  }
-                }}
-                style={{ cursor: 'pointer', flexShrink: 0 }}
-                aria-label={`Select email: ${email.subject}`}
-              />
-              <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem', gap: '0.5rem' }}>
-                  <span style={{ fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0 }}>
-                    {email.from}
-                  </span>
-                  <time style={{ fontSize: '0.75rem', color: '#6b7280', flexShrink: 0 }} dateTime={email.date}>
-                    {new Date(email.date).toLocaleDateString()}
-                  </time>
-                </div>
-                <h3 style={{ fontWeight: '500', marginBottom: '0.25rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0, fontSize: '1rem' }}>
-                  {email.subject}
-                </h3>
-                <p style={{ fontSize: '0.875rem', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>
-                  {email.aiSummary}
-                </p>
-                {email.category && (
-                  <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
-                    <span
-                      style={{
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: '50%',
-                        backgroundColor: email.category.color || '#3b82f6',
-                        flexShrink: 0,
-                        display: 'inline-block'
-                      }}
-                      aria-label={`Category: ${email.category.name}`}
-                    />
-                    <span style={{ fontSize: '0.75rem', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {email.category.name}
+            <li key={email.id}>
+              <article
+                className={`p-4 border-b border-gray-200 cursor-pointer flex gap-3 min-w-0 transition-colors ${
+                  selectedEmailId === email.id ? 'bg-gray-100' : 'bg-white hover:bg-gray-50'
+                }`}
+                onClick={() => onSelectEmail(email)}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedEmails.includes(email.id)}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    if (selectedEmails.includes(email.id)) {
+                      deselectEmail(email.id);
+                    } else {
+                      selectEmail(email.id);
+                    }
+                  }}
+                  className="cursor-pointer shrink-0 mt-1"
+                  aria-label={`Select email: ${email.subject}`}
+                />
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="flex justify-between mb-1 gap-2">
+                    <span className="font-medium truncate flex-1 min-w-0">
+                      {email.from}
                     </span>
+                    <time className="text-xs text-gray-500 shrink-0" dateTime={email.date}>
+                      {new Date(email.date).toLocaleDateString()}
+                    </time>
                   </div>
-                )}
-              </div>
-            </article>
+                  <h3 className="font-medium mb-1 truncate text-base m-0">
+                    {email.subject}
+                  </h3>
+                  <p className="text-sm text-gray-600 truncate m-0">
+                    {email.aiSummary}
+                  </p>
+                  {email.category && (
+                    <div className="mt-2 flex items-center gap-2 overflow-hidden">
+                      <span
+                        className="w-2 h-2 rounded-full shrink-0 inline-block"
+                        style={{ backgroundColor: email.category.color || '#9bb4c0' }}
+                        aria-label={`Category: ${email.category.name}`}
+                      />
+                      <Badge variant="outline" className="text-xs truncate">
+                        {email.category.name}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              </article>
+            </li>
           ))
         )}
       </ul>
