@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  googleId     String     @unique
+  accessToken  String     @db.Text // Encrypted
+  refreshToken String     @db.Text // Encrypted
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  accounts     Account[]
+  categories   Category[]
+  emails       Email[]
+}
+
+model Account {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email        String
+  googleId     String
+  accessToken  String   @db.Text // Encrypted
+  refreshToken String   @db.Text // Encrypted
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, email])
+  @@index([userId])
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String   @db.Text
+  color       String?  @default("#3B82F6") // Default blue color
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  emails      Email[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Email {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  gmailMessageId  String    @unique
+  accountEmail    String // Which Gmail account this email came from
+  subject         String    @db.Text
+  from            String
+  to              String
+  date            DateTime
+  body            String    @db.Text
+  bodyHtml        String?   @db.Text // Original HTML for display
+  aiSummary       String    @db.Text
+  isArchived      Boolean   @default(false)
+  isDeleted       Boolean   @default(false)
+  unsubscribeLink String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([accountEmail])
+  @@index([date])
+}
