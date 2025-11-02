@@ -1,5 +1,7 @@
-import type { Email } from '../types';
-import { emailsApi, processApi } from '../utils/api';
+import type { Email } from '@/types';
+import { emailsApi, processApi } from '@/utils/api';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface EmailDetailProps {
   email: Email;
@@ -7,7 +9,6 @@ interface EmailDetailProps {
 }
 
 export default function EmailDetail({ email, onClose }: EmailDetailProps) {
-  // Add CSS to constrain email content
   const emailContentStyle = `
     .email-content-wrapper img {
       max-width: 100% !important;
@@ -52,159 +53,81 @@ export default function EmailDetail({ email, onClose }: EmailDetailProps) {
   };
 
   return (
-    <aside style={{
-      width: '600px',
-      maxWidth: '50%',
-      minWidth: '400px',
-      backgroundColor: 'white',
-      borderLeft: '1px solid #e5e7eb',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-      flexShrink: 0
-    }}>
+    <aside className="w-[600px] max-w-[50%] min-w-[400px] bg-white border-l border-gray-200 flex flex-col overflow-hidden shrink-0">
       <style>{emailContentStyle}</style>
-      {/* Header */}
-      <header style={{
-        padding: '1rem',
-        borderBottom: '1px solid #e5e7eb',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexShrink: 0
-      }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Email Details</h2>
+
+      <header className="p-4 border-b border-gray-200 flex justify-between items-center shrink-0">
+        <h2 className="text-xl font-semibold truncate">Email Details</h2>
         <button
           onClick={onClose}
-          style={{
-            padding: '0.5rem',
-            backgroundColor: 'transparent',
-            border: 'none',
-            fontSize: '1.5rem',
-            cursor: 'pointer',
-            color: '#6b7280',
-            flexShrink: 0
-          }}
+          className="p-2 bg-transparent border-none text-2xl cursor-pointer text-gray-500 hover:text-gray-700 shrink-0 transition-colors"
           aria-label="Close email details"
         >
           ×
         </button>
       </header>
 
-      {/* Email Content */}
-      <article style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '1.5rem', minWidth: 0 }}>
-        {/* Subject */}
-        <header style={{ marginBottom: '1.5rem' }}>
-          <h1 style={{
-            fontSize: '1.5rem',
-            fontWeight: '600',
-            marginBottom: '0.5rem',
-            margin: 0,
-            wordWrap: 'break-word',
-            overflowWrap: 'break-word',
-            overflow: 'hidden'
-          }}>
+      <article className="flex-1 overflow-y-auto overflow-x-hidden p-6 min-w-0">
+        <header className="mb-6">
+          <h1 className="text-2xl font-semibold break-words">
             {email.subject}
           </h1>
         </header>
 
-        {/* From/To/Date */}
-        <dl style={{ margin: '0 0 1.5rem 0', fontSize: '0.875rem' }}>
-          <div style={{ marginBottom: '0.5rem', display: 'flex', gap: '0.5rem', minWidth: 0 }}>
-            <dt style={{ fontWeight: '500', color: '#6b7280', flexShrink: 0 }}>From:</dt>
-            <dd style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0, flex: 1, minWidth: 0 }}>{email.from}</dd>
+        <dl className="mb-6 text-sm space-y-2">
+          <div className="flex gap-2 min-w-0">
+            <dt className="font-medium text-gray-600 shrink-0">From:</dt>
+            <dd className="truncate flex-1 min-w-0 m-0">{email.from}</dd>
           </div>
-          <div style={{ marginBottom: '0.5rem', display: 'flex', gap: '0.5rem', minWidth: 0 }}>
-            <dt style={{ fontWeight: '500', color: '#6b7280', flexShrink: 0 }}>To:</dt>
-            <dd style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0, flex: 1, minWidth: 0 }}>{email.to}</dd>
+          <div className="flex gap-2 min-w-0">
+            <dt className="font-medium text-gray-600 shrink-0">To:</dt>
+            <dd className="truncate flex-1 min-w-0 m-0">{email.to}</dd>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem', minWidth: 0 }}>
-            <dt style={{ fontWeight: '500', color: '#6b7280', flexShrink: 0 }}>Date:</dt>
-            <dd style={{ margin: 0 }}>
+          <div className="flex gap-2 min-w-0">
+            <dt className="font-medium text-gray-600 shrink-0">Date:</dt>
+            <dd className="m-0">
               <time dateTime={email.date}>{new Date(email.date).toLocaleString()}</time>
             </dd>
           </div>
         </dl>
 
-        {/* AI Summary */}
-        <section style={{
-          padding: '1rem',
-          backgroundColor: '#f3f4f6',
-          borderRadius: '0.375rem',
-          marginBottom: '1.5rem'
-        }}>
-          <h2 style={{ fontWeight: '600', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#6b7280', margin: '0 0 0.5rem 0' }}>
+        <section className="p-4 bg-secondary-100 rounded-lg mb-6">
+          <h2 className="font-semibold text-xs text-gray-600 tracking-wide mb-2">
             AI SUMMARY
           </h2>
-          <p style={{
-            wordWrap: 'break-word',
-            overflowWrap: 'break-word',
-            whiteSpace: 'pre-wrap',
-            margin: 0,
-            overflow: 'hidden'
-          }}>
+          <p className="whitespace-pre-wrap break-words m-0">
             {email.aiSummary}
           </p>
         </section>
 
-        {/* Category */}
         {email.category && (
-          <section style={{ marginBottom: '1.5rem' }}>
-            <h2 style={{ fontWeight: '600', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#6b7280', margin: '0 0 0.5rem 0' }}>
+          <section className="mb-6">
+            <h2 className="font-semibold text-xs text-gray-600 tracking-wide mb-2">
               CATEGORY
             </h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="flex items-center gap-2">
               <span
-                style={{
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '50%',
-                  backgroundColor: email.category.color || '#3b82f6',
-                  flexShrink: 0,
-                  display: 'inline-block'
-                }}
+                className="w-3 h-3 rounded-full shrink-0 inline-block"
+                style={{ backgroundColor: email.category.color || '#9bb4c0' }}
                 aria-label={`Category: ${email.category.name}`}
               />
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email.category.name}</span>
+              <Badge variant="outline">{email.category.name}</Badge>
             </div>
           </section>
         )}
 
-        {/* Body */}
         <section>
-          <h2 style={{ fontWeight: '600', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#6b7280', margin: '0 0 0.5rem 0' }}>
+          <h2 className="font-semibold text-xs text-gray-600 tracking-wide mb-2">
             EMAIL CONTENT
           </h2>
-          <div
-            className="email-content-wrapper"
-            style={{
-              wordWrap: 'break-word',
-              overflowWrap: 'break-word',
-              maxWidth: '100%',
-              overflowX: 'hidden',
-              overflowY: 'auto',
-              minWidth: 0
-            }}
-          >
+          <div className="email-content-wrapper break-words max-w-full overflow-x-hidden overflow-y-auto min-w-0">
             {email.bodyHtml || (email.body && (email.body.trim().startsWith('<!DOCTYPE') || email.body.includes('<html'))) ? (
               <div
                 dangerouslySetInnerHTML={{ __html: email.bodyHtml || email.body }}
-                style={{
-                  maxWidth: '100%',
-                  overflow: 'hidden',
-                  wordWrap: 'break-word',
-                  overflowWrap: 'break-word'
-                }}
+                className="max-w-full overflow-hidden break-words"
               />
             ) : (
-              <pre style={{
-                whiteSpace: 'pre-wrap',
-                wordWrap: 'break-word',
-                overflowWrap: 'break-word',
-                margin: 0,
-                fontFamily: 'inherit',
-                fontSize: 'inherit'
-              }}>
+              <pre className="whitespace-pre-wrap break-words m-0 font-[inherit] text-[inherit]">
                 {email.body}
               </pre>
             )}
@@ -212,47 +135,23 @@ export default function EmailDetail({ email, onClose }: EmailDetailProps) {
         </section>
       </article>
 
-      {/* Actions */}
-      <nav style={{
-        padding: '1rem',
-        borderTop: '1px solid #e5e7eb',
-        display: 'flex',
-        gap: '0.5rem',
-        flexShrink: 0
-      }}>
-        <button
+      <footer className="p-4 border-t border-gray-200 flex gap-2 shrink-0">
+        <Button
           onClick={handleDelete}
-          style={{
-            flex: 1,
-            padding: '0.75rem',
-            backgroundColor: '#ef4444',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.375rem',
-            fontWeight: '500',
-            cursor: 'pointer'
-          }}
+          variant="destructive"
+          className="flex-1"
         >
           Delete
-        </button>
+        </Button>
         {email.unsubscribeLink && (
-          <button
+          <Button
             onClick={handleUnsubscribe}
-            style={{
-              flex: 1,
-              padding: '0.75rem',
-              backgroundColor: '#f59e0b',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.375rem',
-              fontWeight: '500',
-              cursor: 'pointer'
-            }}
+            className="flex-1 bg-accent-400 hover:bg-accent-500"
           >
             Unsubscribe
-          </button>
+          </Button>
         )}
-      </nav>
+      </footer>
     </aside>
   );
 }

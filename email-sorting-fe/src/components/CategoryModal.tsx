@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { categoriesApi } from '../utils/api';
+import { categoriesApi } from '@/utils/api';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface CategoryModalProps {
   onClose: () => void;
@@ -9,7 +12,7 @@ interface CategoryModalProps {
 export default function CategoryModal({ onClose, onSuccess }: CategoryModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [color, setColor] = useState('#3B82F6');
+  const [color, setColor] = useState('#9bb4c0');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,109 +29,75 @@ export default function CategoryModal({ onClose, onSuccess }: CategoryModalProps
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 50
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '0.5rem',
-        padding: '1.5rem',
-        width: '90%',
-        maxWidth: '500px'
-      }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
-          Create New Category
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="text-2xl">Create New Category</DialogTitle>
+          <DialogDescription>
+            Add a new category to organize your emails
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <fieldset className="space-y-2">
+            <label htmlFor="category-name" className="block font-medium text-sm">
               Name
             </label>
-            <input
+            <Input
+              id="category-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.375rem'
-              }}
+              placeholder="e.g., Work, Personal, Newsletters"
             />
-          </div>
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+          </fieldset>
+
+          <fieldset className="space-y-2">
+            <label htmlFor="category-description" className="block font-medium text-sm">
               Description
             </label>
             <textarea
+              id="category-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
               rows={3}
               placeholder="Describe what emails should be categorized here..."
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.375rem'
-              }}
+              className="flex w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
-          </div>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+          </fieldset>
+
+          <fieldset className="space-y-2">
+            <label htmlFor="category-color" className="block font-medium text-sm">
               Color
             </label>
             <input
+              id="category-color"
               type="color"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              style={{
-                width: '100px',
-                height: '40px',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.375rem',
-                cursor: 'pointer'
-              }}
+              className="w-24 h-10 rounded-md border border-gray-200 cursor-pointer"
             />
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-            <button
+          </fieldset>
+
+          <footer className="flex gap-2 justify-end pt-2">
+            <Button
               type="button"
               onClick={onClose}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: '#f3f4f6',
-                border: 'none',
-                borderRadius: '0.375rem',
-                cursor: 'pointer'
-              }}
+              variant="outline"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={loading}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: loading ? '#9ca3af' : '#3b82f6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.375rem',
-                cursor: loading ? 'not-allowed' : 'pointer'
-              }}
+              className="bg-primary-400 hover:bg-primary-500"
             >
               {loading ? 'Creating...' : 'Create'}
-            </button>
-          </div>
+            </Button>
+          </footer>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
