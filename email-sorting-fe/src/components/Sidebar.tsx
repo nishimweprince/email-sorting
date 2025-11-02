@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { useApp } from '../contexts/AppContext';
-import { processApi } from '../utils/api';
+import { useApp } from '@/contexts/AppContext';
+import { processApi } from '@/utils/api';
 import CategoryModal from './CategoryModal';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface SidebarProps {
   selectedCategoryId: string | null;
@@ -18,7 +20,7 @@ export default function Sidebar({ selectedCategoryId, onSelectCategory }: Sideba
     try {
       await processApi.syncEmails(50);
       alert('Emails synced successfully!');
-      onSelectCategory(null); // Refresh the email list
+      onSelectCategory(null);
     } catch (error: any) {
       alert(error.response?.data?.error || 'Failed to sync emails');
     } finally {
@@ -27,116 +29,69 @@ export default function Sidebar({ selectedCategoryId, onSelectCategory }: Sideba
   };
 
   return (
-    <div style={{
-      width: '280px',
-      backgroundColor: 'white',
-      borderRight: '1px solid #e5e7eb',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden'
-    }}>
-      {/* Sync Button */}
-      <div style={{ padding: '1rem' }}>
-        <button
+    <aside className="w-[280px] bg-white border-r border-gray-200 flex flex-col overflow-hidden">
+      <section className="p-4">
+        <Button
           onClick={handleSync}
           disabled={syncing}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            backgroundColor: syncing ? '#9ca3af' : '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.375rem',
-            fontWeight: '500',
-            cursor: syncing ? 'not-allowed' : 'pointer'
-          }}
+          className="w-full bg-primary-400 hover:bg-primary-500"
         >
           {syncing ? 'Syncing...' : 'Sync Emails'}
-        </button>
-      </div>
+        </Button>
+      </section>
 
-      {/* All Emails */}
-      <div
-        onClick={() => onSelectCategory(null)}
-        style={{
-          padding: '0.75rem 1rem',
-          cursor: 'pointer',
-          backgroundColor: selectedCategoryId === null ? '#f3f4f6' : 'transparent',
-          borderLeft: selectedCategoryId === null ? '3px solid #3b82f6' : '3px solid transparent'
-        }}
-      >
-        <div style={{ fontWeight: '500' }}>All Emails</div>
-      </div>
-
-      {/* Categories Header */}
-      <div style={{
-        padding: '0.75rem 1rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderTop: '1px solid #e5e7eb',
-        borderBottom: '1px solid #e5e7eb',
-        backgroundColor: '#f9fafb'
-      }}>
-        <span style={{ fontWeight: '600', fontSize: '0.875rem', color: '#6b7280' }}>
-          CATEGORIES
-        </span>
+      <nav className="flex-1 flex flex-col overflow-hidden">
         <button
-          onClick={() => setShowModal(true)}
-          style={{
-            padding: '0.25rem 0.5rem',
-            backgroundColor: '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.25rem',
-            fontSize: '0.875rem',
-            cursor: 'pointer'
-          }}
+          onClick={() => onSelectCategory(null)}
+          className={`px-4 py-3 cursor-pointer text-left transition-colors border-l-4 ${
+            selectedCategoryId === null
+              ? 'bg-primary-50 border-primary-400 font-medium'
+              : 'bg-transparent border-transparent hover:bg-gray-50'
+          }`}
         >
-          + Add
+          All Emails
         </button>
-      </div>
 
-      {/* Category List */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
-        {categories.map((category) => (
-          <div
-            key={category.id}
-            onClick={() => onSelectCategory(category.id)}
-            style={{
-              padding: '0.75rem 1rem',
-              cursor: 'pointer',
-              backgroundColor: selectedCategoryId === category.id ? '#f3f4f6' : 'transparent',
-              borderLeft: selectedCategoryId === category.id ? '3px solid #3b82f6' : '3px solid transparent',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}
+        <header className="px-4 py-3 flex justify-between items-center border-y border-gray-200 bg-gray-50">
+          <h2 className="font-semibold text-sm text-gray-600 tracking-wide">CATEGORIES</h2>
+          <Button
+            onClick={() => setShowModal(true)}
+            size="sm"
+            className="text-xs bg-primary-400 hover:bg-primary-500"
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div
-                style={{
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '50%',
-                  backgroundColor: category.color || '#3b82f6'
-                }}
-              />
-              <span>{category.name}</span>
-            </div>
-            {category._count && (
-              <span style={{
-                fontSize: '0.75rem',
-                backgroundColor: '#e5e7eb',
-                padding: '0.125rem 0.5rem',
-                borderRadius: '9999px'
-              }}>
-                {category._count.emails}
-              </span>
-            )}
-          </div>
-        ))}
-      </div>
+            + Add
+          </Button>
+        </header>
+
+        <ul className="flex-1 overflow-y-auto list-none m-0 p-0">
+          {categories.map((category) => (
+            <li key={category.id}>
+              <button
+                onClick={() => onSelectCategory(category.id)}
+                className={`w-full px-4 py-3 cursor-pointer flex justify-between items-center transition-colors border-l-4 ${
+                  selectedCategoryId === category.id
+                    ? 'bg-primary-50 border-primary-400'
+                    : 'bg-transparent border-transparent hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ backgroundColor: category.color || '#9bb4c0' }}
+                    aria-label={`Category color for ${category.name}`}
+                  />
+                  <span className="truncate">{category.name}</span>
+                </div>
+                {category._count && (
+                  <Badge variant="secondary" className="text-xs bg-secondary-200">
+                    {category._count.emails}
+                  </Badge>
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       {showModal && (
         <CategoryModal
@@ -147,6 +102,6 @@ export default function Sidebar({ selectedCategoryId, onSelectCategory }: Sideba
           }}
         />
       )}
-    </div>
+    </aside>
   );
 }
