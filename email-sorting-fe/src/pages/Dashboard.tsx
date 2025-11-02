@@ -19,21 +19,22 @@ export default function Dashboard() {
       />
 
       {/* Main Content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         {/* Header */}
-        <div style={{
+        <header style={{
           backgroundColor: 'white',
           borderBottom: '1px solid #e5e7eb',
           padding: '1rem 1.5rem',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          flexShrink: 0
         }}>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: '600' }}>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: '600', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             AI Email Sorting
           </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <span style={{ color: '#6b7280' }}>{user?.email}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
+            <span style={{ color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>{user?.email}</span>
             <button
               onClick={() => window.location.reload()}
               style={{
@@ -41,29 +42,39 @@ export default function Dashboard() {
                 backgroundColor: '#f3f4f6',
                 border: 'none',
                 borderRadius: '0.375rem',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                flexShrink: 0
               }}
             >
               Logout
             </button>
           </div>
-        </div>
+        </header>
 
         {/* Content Area */}
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-          <EmailList
-            categoryId={selectedCategoryId}
-            onSelectEmail={setSelectedEmail}
-            selectedEmailId={selectedEmail?.id}
-          />
+        <section style={{ flex: 1, display: 'flex', overflow: 'hidden', minWidth: 0 }}>
+          <div style={{
+            flex: selectedEmail ? '0 1 auto' : '1',
+            minWidth: 0,
+            overflow: 'hidden',
+            maxWidth: selectedEmail ? '50%' : '100%',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <EmailList
+              categoryId={selectedCategoryId}
+              onSelectEmail={setSelectedEmail}
+              selectedEmailId={selectedEmail?.id}
+            />
+          </div>
           {selectedEmail && (
             <EmailDetail
               email={selectedEmail}
               onClose={() => setSelectedEmail(null)}
             />
           )}
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }
