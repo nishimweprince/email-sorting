@@ -92,7 +92,7 @@ export default function Dashboard() {
           {/* Email Detail - Full width on mobile, side panel on desktop */}
           {selectedEmail && (
             <div className={`
-              ${selectedEmail ? 'flex-1 md:flex-initial' : ''}
+              ${selectedEmail ? 'flex-1 md:flex-initial h-full overflow-hidden' : ''}
             `}>
               <EmailDetail
                 email={selectedEmail}

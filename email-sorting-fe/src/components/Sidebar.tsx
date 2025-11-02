@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useApp } from '@/contexts/useAppContext';
 import { processApi } from '@/utils/api';
 import CategoryModal from './CategoryModal';
+import AlertModal from '@/components/ui/alert-modal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { AxiosError } from 'axios';
@@ -15,15 +16,28 @@ export default function Sidebar({ selectedCategoryId, onSelectCategory }: Sideba
   const { categories, refreshCategories } = useApp();
   const [showModal, setShowModal] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [showSyncDisclaimer, setShowSyncDisclaimer] = useState(false);
+  const [alertModal, setAlertModal] = useState<{ open: boolean; title: string; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({
+    open: false,
+    title: '',
+    message: '',
+    type: 'info'
+  });
 
   const handleSync = async () => {
     setSyncing(true);
     try {
       await processApi.syncEmails(50);
-      alert('Emails synced successfully!');
+      await refreshCategories(); // Refetch categories after successful sync
+      setShowSyncDisclaimer(true);
       onSelectCategory(null);
     } catch (error: unknown) {
-      alert((error as unknown as AxiosError<{ error?: string }>)?.response?.data?.error || 'Failed to sync emails');
+      setAlertModal({
+        open: true,
+        title: 'Error',
+        message: (error as unknown as AxiosError<{ error?: string }>)?.response?.data?.error || 'Failed to sync emails',
+        type: 'error'
+      });
     } finally {
       setSyncing(false);
     }
@@ -104,6 +118,20 @@ export default function Sidebar({ selectedCategoryId, onSelectCategory }: Sideba
           }}
         />
       )}
+      <AlertModal
+        open={alertModal.open}
+        onClose={() => setAlertModal({ ...alertModal, open: false })}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
+      />
+      <AlertModal
+        open={showSyncDisclaimer}
+        onClose={() => setShowSyncDisclaimer(false)}
+        title="Email Sync in Progress"
+        message="Email synchronization has been started. You will be notified when the sync is completed. This may take a few minutes."
+        type="info"
+      />
     </aside>
   );
 }

@@ -1,4 +1,5 @@
 import * as React from "react"
+import { createPortal } from "react-dom"
 import { cn } from "@/lib/utils"
 
 interface DialogProps {
@@ -8,18 +9,17 @@ interface DialogProps {
 }
 
 const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
-  return (
-    <>
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="fixed inset-0 bg-black/50"
-            onClick={() => onOpenChange?.(false)}
-          />
-          {children}
-        </div>
-      )}
-    </>
+  if (!open) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-9999 flex items-center justify-center">
+      <div
+        className="fixed inset-0 bg-black/50"
+        onClick={() => onOpenChange?.(false)}
+      />
+      {children}
+    </div>,
+    document.body
   )
 }
 
@@ -30,10 +30,11 @@ const DialogContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "relative z-50 grid w-full max-w-lg gap-4 border border-gray-200 bg-white p-6 shadow-lg rounded-lg",
+      "relative z-10000 grid w-full max-w-lg gap-4 border border-gray-200 bg-white p-6 shadow-lg rounded-lg mx-4",
       className
     )}
     {...props}
+    onClick={(e) => e.stopPropagation()}
   >
     {children}
   </div>

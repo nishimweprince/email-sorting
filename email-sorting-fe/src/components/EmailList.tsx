@@ -3,6 +3,8 @@ import { useApp } from '@/contexts/useAppContext';
 import { emailsApi, processApi } from '@/utils/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import AlertModal from '@/components/ui/alert-modal';
+import ConfirmModal from '@/components/ui/confirm-modal';
 import type { Email } from '@/types';
 import type { AxiosError } from 'axios';
 
@@ -16,6 +18,20 @@ export default function EmailList({ categoryId, onSelectEmail, selectedEmailId }
   const { selectedEmails, selectEmail, deselectEmail, selectAllEmails, deselectAllEmails } = useApp();
   const [emails, setEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState(true);
+  const [alertModal, setAlertModal] = useState<{ open: boolean; title: string; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({
+    open: false,
+    title: '',
+    message: '',
+    type: 'info'
+  });
+  const [confirmModal, setConfirmModal] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void | Promise<void>; variant?: 'default' | 'destructive'; loading?: boolean }>({
+    open: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    variant: 'default',
+    loading: false
+  });
 
   const loadEmails = useCallback(async () => {
     setLoading(true);
@@ -44,28 +60,68 @@ export default function EmailList({ categoryId, onSelectEmail, selectedEmailId }
   };
 
   const handleBulkDelete = async () => {
-    if (!confirm(`Delete ${selectedEmails.length} emails?`)) return;
-
-    try {
-      await emailsApi.bulkDelete(selectedEmails);
-      deselectAllEmails();
-      loadEmails();
-      alert('Emails deleted successfully');
-    } catch (error: unknown) {
-      alert((error as unknown as AxiosError<{ error?: string }>)?.response?.data?.error || 'Failed to delete emails');
-    }
+    setConfirmModal({
+      open: true,
+      title: 'Delete Emails',
+      message: `Are you sure you want to delete ${selectedEmails.length} email(s)?`,
+      variant: 'destructive',
+      loading: false,
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, loading: true }));
+        try {
+          await emailsApi.bulkDelete(selectedEmails);
+          setConfirmModal(prev => ({ ...prev, loading: false, open: false }));
+          deselectAllEmails();
+          loadEmails();
+          setAlertModal({
+            open: true,
+            title: 'Success',
+            message: 'Emails deleted successfully',
+            type: 'success'
+          });
+        } catch (error: unknown) {
+          setConfirmModal(prev => ({ ...prev, loading: false }));
+          setAlertModal({
+            open: true,
+            title: 'Error',
+            message: (error as unknown as AxiosError<{ error?: string }>)?.response?.data?.error || 'Failed to delete emails',
+            type: 'error'
+          });
+        }
+      }
+    });
   };
 
   const handleBulkUnsubscribe = async () => {
-    if (!confirm(`Unsubscribe from ${selectedEmails.length} email lists?`)) return;
-
-    try {
-      await processApi.bulkUnsubscribe(selectedEmails);
-      deselectAllEmails();
-      alert('Unsubscribe process completed');
-    } catch (error: unknown) {
-      alert((error as unknown as AxiosError<{ error?: string }>)?.response?.data?.error || 'Failed to unsubscribe');
-    }
+    setConfirmModal({
+      open: true,
+      title: 'Unsubscribe',
+      message: `Are you sure you want to unsubscribe from ${selectedEmails.length} email list(s)?`,
+      variant: 'default',
+      loading: false,
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, loading: true }));
+        try {
+          await processApi.bulkUnsubscribe(selectedEmails);
+          setConfirmModal(prev => ({ ...prev, loading: false, open: false }));
+          deselectAllEmails();
+          setAlertModal({
+            open: true,
+            title: 'Success',
+            message: 'Unsubscribe process completed',
+            type: 'success'
+          });
+        } catch (error: unknown) {
+          setConfirmModal(prev => ({ ...prev, loading: false }));
+          setAlertModal({
+            open: true,
+            title: 'Error',
+            message: (error as unknown as AxiosError<{ error?: string }>)?.response?.data?.error || 'Failed to unsubscribe',
+            type: 'error'
+          });
+        }
+      }
+    });
   };
 
   if (loading) {
@@ -185,6 +241,22 @@ export default function EmailList({ categoryId, onSelectEmail, selectedEmailId }
           ))
         )}
       </ul>
+      <AlertModal
+        open={alertModal.open}
+        onClose={() => setAlertModal({ ...alertModal, open: false })}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
+      />
+      <ConfirmModal
+        open={confirmModal.open}
+        onClose={() => setConfirmModal({ ...confirmModal, open: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        variant={confirmModal.variant || 'default'}
+        loading={confirmModal.loading}
+      />
     </section>
   );
 }

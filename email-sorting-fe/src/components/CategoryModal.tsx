@@ -3,6 +3,7 @@ import { categoriesApi } from '@/utils/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import AlertModal from '@/components/ui/alert-modal';
 import type { AxiosError } from 'axios';
 
 interface CategoryModalProps {
@@ -15,6 +16,12 @@ export default function CategoryModal({ onClose, onSuccess }: CategoryModalProps
   const [description, setDescription] = useState('');
   const [color, setColor] = useState('#9bb4c0');
   const [loading, setLoading] = useState(false);
+  const [alertModal, setAlertModal] = useState<{ open: boolean; title: string; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({
+    open: false,
+    title: '',
+    message: '',
+    type: 'error'
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +30,12 @@ export default function CategoryModal({ onClose, onSuccess }: CategoryModalProps
       await categoriesApi.create({ name, description, color });
       onSuccess();
     } catch (error: unknown) {
-      alert((error as unknown as AxiosError<{ error?: string }>)?.response?.data?.error || 'Failed to create category');
+      setAlertModal({
+        open: true,
+        title: 'Error',
+        message: (error as unknown as AxiosError<{ error?: string }>)?.response?.data?.error || 'Failed to create category',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
@@ -99,6 +111,13 @@ export default function CategoryModal({ onClose, onSuccess }: CategoryModalProps
           </footer>
         </form>
       </DialogContent>
+      <AlertModal
+        open={alertModal.open}
+        onClose={() => setAlertModal({ ...alertModal, open: false })}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
+      />
     </Dialog>
   );
 }
