@@ -51,7 +51,10 @@ export class GmailService {
             format: 'full',
           });
 
-          const headers = fullMessage.data.payload?.headers || [];
+          const rawHeaders = fullMessage.data.payload?.headers || [];
+          const headers = rawHeaders
+            .filter((h): h is { name: string; value: string } => !!h.name && !!h.value)
+            .map((h) => ({ name: h.name!, value: h.value! }));
           const subject = headers.find((h) => h.name === 'Subject')?.value || '(No Subject)';
           const from = headers.find((h) => h.name === 'From')?.value || '';
           const to = headers.find((h) => h.name === 'To')?.value || '';
@@ -70,6 +73,7 @@ export class GmailService {
             body: body || fullMessage.data.snippet || '',
             bodyHtml,
             snippet: fullMessage.data.snippet || '',
+            headers,
           });
         } catch (error) {
           logger.error(`Error fetching message ${message.id}`, error);
@@ -156,25 +160,102 @@ export class GmailService {
     return { body: body || '', bodyHtml: bodyHtml || undefined };
   }
 
-  extractUnsubscribeLink(headers: any[], body: string): string | null {
-    // Check List-Unsubscribe header
+  extractUnsubscribeLink(headers: any[], body: string, bodyHtml?: string): string | null {
+    // Check List-Unsubscribe header (most reliable source)
     const unsubHeader = headers.find((h) => h.name === 'List-Unsubscribe')?.value;
     if (unsubHeader) {
-      const match = unsubHeader.match(/<(https?:\/\/[^>]+)>/);
-      if (match) return match[1];
+      // Try to extract HTTP/HTTPS links
+      const httpMatch = unsubHeader.match(/<(https?:\/\/[^>]+)>/);
+      if (httpMatch) return httpMatch[1];
+      
+      // Try to extract mailto links
+      const mailtoMatch = unsubHeader.match(/<(mailto:[^>]+)>/i);
+      if (mailtoMatch) return mailtoMatch[1];
     }
 
-    // Check body for unsubscribe links
+    // Check List-Unsubscribe-Post header (RFC 8058)
+    const unsubPostHeader = headers.find((h) => h.name === 'List-Unsubscribe-Post')?.value;
+    if (unsubPostHeader && unsubHeader) {
+      // If List-Unsubscribe-Post exists, the unsubscribe link is in List-Unsubscribe
+      const httpMatch = unsubHeader.match(/<(https?:\/\/[^>]+)>/);
+      if (httpMatch) return httpMatch[1];
+    }
+
+    // Search in body (combine plain text and HTML)
+    const searchBody = (bodyHtml || body) + ' ' + body;
+
+    // Comprehensive patterns for detecting unsubscribe links
     const patterns = [
-      /unsubscribe[^"]*?(https?:\/\/[^\s"<>]+)/gi,
-      /opt[- ]?out[^"]*?(https?:\/\/[^\s"<>]+)/gi,
-      /<a[^>]*href=["'](https?:\/\/[^"']*unsubscribe[^"']*)["']/gi,
+      // HTML anchor tags with various unsubscribe phrases
+      /<a[^>]*href=["']([^"']*(?:unsubscribe|opt[-\s]?out|remove|preferences?|manage|update|email[-\s]?settings|subscription)[^"']*)["'][^>]*>/gi,
+      
+      // Direct URL patterns near unsubscribe text
+      /(?:click\s+(?:here|this)\s+to|click\s+to|to\s+unsubscribe)[^<]*?href=["'](https?:\/\/[^"']+)["']/gi,
+      /(?:unsubscribe|opt[-\s]?out|remove\s+me)[^<]*?href=["'](https?:\/\/[^"']+)["']/gi,
+      
+      // Plain text patterns with URLs
+      /(?:click\s+(?:here|this|link)\s+to\s+unsubscribe)[\s:]+(https?:\/\/[^\s<>"']+)/gi,
+      /unsubscribe[\s:]+(?:here|at)[\s:]+(https?:\/\/[^\s<>"']+)/gi,
+      /(?:to\s+)?unsubscribe[,:]\s*(?:please\s+)?(?:visit|go\s+to|click)[\s:]+(https?:\/\/[^\s<>"']+)/gi,
+      /(?:manage\s+your\s+)?(?:email\s+)?(?:preferences?|subscription)[\s:]+(?:at|here)[\s:]+(https?:\/\/[^\s<>"']+)/gi,
+      
+      // Patterns for opt-out variations
+      /opt[-\s]?out[\s:]+(?:here|at)[\s:]+(https?:\/\/[^\s<>"']+)/gi,
+      /(?:to\s+)?opt[-\s]?out[,:]\s*(?:please\s+)?(?:visit|go\s+to|click)[\s:]+(https?:\/\/[^\s<>"']+)/gi,
+      
+      // URL contains unsubscribe-related keywords
+      /(https?:\/\/[^\s<>"']*(?:unsubscribe|opt[-\s]?out|remove|preferences?|manage|update|email[-\s]?settings|subscription|cancel)[^\s<>"']*)/gi,
+      
+      // Mailto links
+      /(mailto:[^\s<>"']*(?:unsubscribe|opt[-\s]?out|remove)[^\s<>"']*)/gi,
+      
+      // Common unsubscribe phrases with nearby URLs
+      /(?:remove\s+me|stop\s+receiving|no\s+longer\s+want)[^<]*?href=["'](https?:\/\/[^"']+)["']/gi,
+      
+      // Preference center patterns
+      /(?:preference\s+center|update\s+preferences?|manage\s+preferences?)[^<]*?href=["'](https?:\/\/[^"']+)["']/gi,
+      
+      // HTML with text content containing unsubscribe
+      /<a[^>]*href=["'](https?:\/\/[^"']+)["'][^>]*>[^<]*(?:unsubscribe|opt[-\s]?out|remove|preferences?)[^<]*<\/a>/gi,
     ];
 
+    // Try all patterns and return the first match
     for (const pattern of patterns) {
-      const match = pattern.exec(body);
-      if (match) {
-        return match[1];
+      const matches = Array.from(searchBody.matchAll(pattern));
+      for (const match of matches) {
+        if (match[1]) {
+          // Clean up the URL (remove trailing punctuation)
+          let url = match[1].trim();
+          // Remove common trailing characters that might have been captured
+          url = url.replace(/[.,;:!?)\]}>]+$/, '');
+          // Validate it's a proper URL format
+          if (url.match(/^(https?:\/\/|mailto:)/i)) {
+            return url;
+          }
+        }
+      }
+    }
+
+    // Fallback: Look for any URL in close proximity to unsubscribe keywords
+    const unsubscribeKeywords = /(?:unsubscribe|opt[-\s]?out|remove\s+me|preference\s+center|manage\s+subscription)/gi;
+    const urlPattern = /(https?:\/\/[^\s<>"']+)/gi;
+    
+    const keywordMatches = Array.from(searchBody.matchAll(unsubscribeKeywords));
+    const urlMatches = Array.from(searchBody.matchAll(urlPattern));
+    
+    // Find URLs within reasonable distance of unsubscribe keywords
+    for (const keywordMatch of keywordMatches) {
+      const keywordPos = keywordMatch.index || 0;
+      for (const urlMatch of urlMatches) {
+        const urlPos = urlMatch.index || 0;
+        // If URL is within 200 characters before or after the keyword
+        if (Math.abs(urlPos - keywordPos) < 200) {
+          let url = urlMatch[1].trim();
+          url = url.replace(/[.,;:!?)\]}>]+$/, '');
+          if (url.match(/^(https?:\/\/|mailto:)/i)) {
+            return url;
+          }
+        }
       }
     }
 

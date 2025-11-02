@@ -81,7 +81,11 @@ export class ProcessController {
           );
 
           // Extract unsubscribe link
-          const unsubscribeLink = gmailService.extractUnsubscribeLink([], gmailMessage.body);
+          const unsubscribeLink = gmailService.extractUnsubscribeLink(
+            gmailMessage.headers || [],
+            gmailMessage.body,
+            gmailMessage.bodyHtml
+          );
 
           // Save to database
           await prisma.email.create({
