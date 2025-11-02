@@ -8,23 +8,23 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-secondary-50 to-accent-50 p-4">
+    <main className="min-h-screen flex items-center justify-center bg-linear-to-br from-primary-50 via-secondary-50 to-accent-50 p-4 sm:p-6">
       <Card className="w-full max-w-md shadow-xl border-primary-200">
-        <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
+        <CardHeader className="text-center space-y-2 sm:space-y-3 p-4 sm:p-6">
+          <CardTitle className="text-2xl sm:text-3xl font-bold bg-linear-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
             AI Email Sorting
           </CardTitle>
-          <CardDescription className="text-base">
+          <CardDescription className="text-sm sm:text-base">
             Automatically categorize and summarize your emails with AI
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
           <Button
             onClick={handleGoogleLogin}
-            className="w-full bg-dark-400 hover:bg-dark-500 text-white text-base py-6"
+            className="w-full bg-dark-400 hover:bg-dark-500 text-white text-sm sm:text-base py-5 sm:py-6 h-auto"
             size="lg"
           >
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -32,7 +32,7 @@ export default function LoginPage() {
             </svg>
             Sign in with Google
           </Button>
-          <p className="text-sm text-center text-gray-500">
+          <p className="text-xs sm:text-sm text-center text-gray-500">
             Connect your Gmail account to get started
           </p>
         </CardContent>
