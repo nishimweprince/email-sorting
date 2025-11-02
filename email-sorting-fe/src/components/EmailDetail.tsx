@@ -7,6 +7,22 @@ interface EmailDetailProps {
 }
 
 export default function EmailDetail({ email, onClose }: EmailDetailProps) {
+  // Add CSS to constrain email content
+  const emailContentStyle = `
+    .email-content-wrapper img {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+    .email-content-wrapper table {
+      max-width: 100% !important;
+      table-layout: auto !important;
+    }
+    .email-content-wrapper * {
+      max-width: 100% !important;
+      word-wrap: break-word !important;
+    }
+  `;
+
   const handleDelete = async () => {
     if (!confirm('Delete this email?')) return;
 
@@ -36,23 +52,28 @@ export default function EmailDetail({ email, onClose }: EmailDetailProps) {
   };
 
   return (
-    <div style={{
+    <aside style={{
       width: '600px',
+      maxWidth: '50%',
+      minWidth: '400px',
       backgroundColor: 'white',
       borderLeft: '1px solid #e5e7eb',
       display: 'flex',
       flexDirection: 'column',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      flexShrink: 0
     }}>
+      <style>{emailContentStyle}</style>
       {/* Header */}
-      <div style={{
+      <header style={{
         padding: '1rem',
         borderBottom: '1px solid #e5e7eb',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        flexShrink: 0
       }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Email Details</h2>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Email Details</h2>
         <button
           onClick={onClose}
           style={{
@@ -61,90 +82,143 @@ export default function EmailDetail({ email, onClose }: EmailDetailProps) {
             border: 'none',
             fontSize: '1.5rem',
             cursor: 'pointer',
-            color: '#6b7280'
+            color: '#6b7280',
+            flexShrink: 0
           }}
+          aria-label="Close email details"
         >
           ×
         </button>
-      </div>
+      </header>
 
       {/* Email Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
+      <article style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '1.5rem', minWidth: 0 }}>
         {/* Subject */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+        <header style={{ marginBottom: '1.5rem' }}>
+          <h1 style={{
+            fontSize: '1.5rem',
+            fontWeight: '600',
+            marginBottom: '0.5rem',
+            margin: 0,
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word',
+            overflow: 'hidden'
+          }}>
             {email.subject}
-          </h3>
-        </div>
+          </h1>
+        </header>
 
         {/* From/To/Date */}
-        <div style={{ marginBottom: '1.5rem', fontSize: '0.875rem' }}>
-          <div style={{ marginBottom: '0.5rem' }}>
-            <span style={{ fontWeight: '500', color: '#6b7280' }}>From: </span>
-            <span>{email.from}</span>
+        <dl style={{ margin: '0 0 1.5rem 0', fontSize: '0.875rem' }}>
+          <div style={{ marginBottom: '0.5rem', display: 'flex', gap: '0.5rem', minWidth: 0 }}>
+            <dt style={{ fontWeight: '500', color: '#6b7280', flexShrink: 0 }}>From:</dt>
+            <dd style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0, flex: 1, minWidth: 0 }}>{email.from}</dd>
           </div>
-          <div style={{ marginBottom: '0.5rem' }}>
-            <span style={{ fontWeight: '500', color: '#6b7280' }}>To: </span>
-            <span>{email.to}</span>
+          <div style={{ marginBottom: '0.5rem', display: 'flex', gap: '0.5rem', minWidth: 0 }}>
+            <dt style={{ fontWeight: '500', color: '#6b7280', flexShrink: 0 }}>To:</dt>
+            <dd style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0, flex: 1, minWidth: 0 }}>{email.to}</dd>
           </div>
-          <div>
-            <span style={{ fontWeight: '500', color: '#6b7280' }}>Date: </span>
-            <span>{new Date(email.date).toLocaleString()}</span>
+          <div style={{ display: 'flex', gap: '0.5rem', minWidth: 0 }}>
+            <dt style={{ fontWeight: '500', color: '#6b7280', flexShrink: 0 }}>Date:</dt>
+            <dd style={{ margin: 0 }}>
+              <time dateTime={email.date}>{new Date(email.date).toLocaleString()}</time>
+            </dd>
           </div>
-        </div>
+        </dl>
 
         {/* AI Summary */}
-        <div style={{
+        <section style={{
           padding: '1rem',
           backgroundColor: '#f3f4f6',
           borderRadius: '0.375rem',
           marginBottom: '1.5rem'
         }}>
-          <div style={{ fontWeight: '600', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#6b7280' }}>
+          <h2 style={{ fontWeight: '600', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#6b7280', margin: '0 0 0.5rem 0' }}>
             AI SUMMARY
-          </div>
-          <div>{email.aiSummary}</div>
-        </div>
+          </h2>
+          <p style={{
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word',
+            whiteSpace: 'pre-wrap',
+            margin: 0,
+            overflow: 'hidden'
+          }}>
+            {email.aiSummary}
+          </p>
+        </section>
 
         {/* Category */}
         {email.category && (
-          <div style={{ marginBottom: '1.5rem' }}>
-            <div style={{ fontWeight: '600', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#6b7280' }}>
+          <section style={{ marginBottom: '1.5rem' }}>
+            <h2 style={{ fontWeight: '600', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#6b7280', margin: '0 0 0.5rem 0' }}>
               CATEGORY
-            </div>
+            </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div
+              <span
                 style={{
                   width: '12px',
                   height: '12px',
                   borderRadius: '50%',
-                  backgroundColor: email.category.color || '#3b82f6'
+                  backgroundColor: email.category.color || '#3b82f6',
+                  flexShrink: 0,
+                  display: 'inline-block'
                 }}
+                aria-label={`Category: ${email.category.name}`}
               />
-              <span>{email.category.name}</span>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email.category.name}</span>
             </div>
-          </div>
+          </section>
         )}
 
         {/* Body */}
-        <div>
-          <div style={{ fontWeight: '600', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#6b7280' }}>
+        <section>
+          <h2 style={{ fontWeight: '600', marginBottom: '0.5rem', fontSize: '0.875rem', color: '#6b7280', margin: '0 0 0.5rem 0' }}>
             EMAIL CONTENT
+          </h2>
+          <div
+            className="email-content-wrapper"
+            style={{
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              maxWidth: '100%',
+              overflowX: 'hidden',
+              overflowY: 'auto',
+              minWidth: 0
+            }}
+          >
+            {email.bodyHtml || (email.body && (email.body.trim().startsWith('<!DOCTYPE') || email.body.includes('<html'))) ? (
+              <div
+                dangerouslySetInnerHTML={{ __html: email.bodyHtml || email.body }}
+                style={{
+                  maxWidth: '100%',
+                  overflow: 'hidden',
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word'
+                }}
+              />
+            ) : (
+              <pre style={{
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+                margin: 0,
+                fontFamily: 'inherit',
+                fontSize: 'inherit'
+              }}>
+                {email.body}
+              </pre>
+            )}
           </div>
-          {email.bodyHtml ? (
-            <div dangerouslySetInnerHTML={{ __html: email.bodyHtml }} />
-          ) : (
-            <div style={{ whiteSpace: 'pre-wrap' }}>{email.body}</div>
-          )}
-        </div>
-      </div>
+        </section>
+      </article>
 
       {/* Actions */}
-      <div style={{
+      <nav style={{
         padding: '1rem',
         borderTop: '1px solid #e5e7eb',
         display: 'flex',
-        gap: '0.5rem'
+        gap: '0.5rem',
+        flexShrink: 0
       }}>
         <button
           onClick={handleDelete}
@@ -178,7 +252,7 @@ export default function EmailDetail({ email, onClose }: EmailDetailProps) {
             Unsubscribe
           </button>
         )}
-      </div>
-    </div>
+      </nav>
+    </aside>
   );
 }
