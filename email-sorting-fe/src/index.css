@@ -1,68 +1,47 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@theme {
+  --color-primary-50: #f0f5f7;
+  --color-primary-100: #d9e7ec;
+  --color-primary-200: #b3cfd9;
+  --color-primary-300: #9bb4c0;
+  --color-primary-400: #7a9aaa;
+  --color-primary-500: #5a7f93;
+  --color-primary-600: #4a6576;
+  --color-primary-700: #3a4f5c;
+  --color-primary-800: #2a3943;
+  --color-primary-900: #1a2329;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  --color-secondary-50: #f9f6f1;
+  --color-secondary-100: #f2ebe0;
+  --color-secondary-200: #e8dac6;
+  --color-secondary-300: #e1d0b3;
+  --color-secondary-400: #d4bf99;
+  --color-secondary-500: #c7ad7f;
+  --color-secondary-600: #a08e68;
+  --color-secondary-700: #796b4e;
+  --color-secondary-800: #524735;
+  --color-secondary-900: #2b241b;
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
+  --color-accent-50: #f3f0ed;
+  --color-accent-100: #e3ddd5;
+  --color-accent-200: #c7bcab;
+  --color-accent-300: #a18d6d;
+  --color-accent-400: #8a7759;
+  --color-accent-500: #726145;
+  --color-accent-600: #5c4d37;
+  --color-accent-700: #453a2a;
+  --color-accent-800: #2e271c;
+  --color-accent-900: #17140e;
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+  --color-dark-50: #e8e0e0;
+  --color-dark-100: #c6b3b3;
+  --color-dark-200: #a08080;
+  --color-dark-300: #7a4d4d;
+  --color-dark-400: #703b3b;
+  --color-dark-500: #5e3232;
+  --color-dark-600: #4c2929;
+  --color-dark-700: #3a2020;
+  --color-dark-800: #281717;
+  --color-dark-900: #160d0d;
 }

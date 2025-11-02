@@ -1,20 +1,15 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AppProvider, useApp } from './contexts/AppContext';
-import LoginPage from './pages/LoginPage';
-import Dashboard from './pages/Dashboard';
+import { AppProvider, useApp } from '@/contexts/AppContext';
+import LoginPage from '@/pages/LoginPage';
+import Dashboard from '@/pages/Dashboard';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useApp();
 
   if (isLoading) {
     return (
-      <div style={{
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <p>Loading...</p>
+      <div className="h-screen flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
       </div>
     );
   }
@@ -31,13 +26,8 @@ function AppRoutes() {
 
   if (isLoading) {
     return (
-      <div style={{
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <p>Loading...</p>
+      <div className="h-screen flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
       </div>
     );
   }
