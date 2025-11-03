@@ -22,7 +22,9 @@ export class GmailService {
   async fetchEmails(
     encryptedAccessToken: string,
     encryptedRefreshToken: string,
-    maxResults: number = 50
+    maxResults: number = 50,
+    includeSpam: boolean = false,
+    includeTrash: boolean = false
   ): Promise<EmailMessage[]> {
     try {
       const accessToken = decrypt(encryptedAccessToken);
@@ -30,10 +32,15 @@ export class GmailService {
 
       const gmail = this.getGmailClient(accessToken, refreshToken);
 
-      // Get list of message IDs from inbox
+      // Build label IDs based on options
+      const labelIds: string[] = ['INBOX'];
+      if (includeSpam) labelIds.push('SPAM');
+      if (includeTrash) labelIds.push('TRASH');
+
+      // Get list of message IDs from specified folders
       const response = await gmail.users.messages.list({
         userId: 'me',
-        labelIds: ['INBOX'],
+        labelIds,
         maxResults,
       });
 
