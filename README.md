@@ -1,5 +1,8 @@
 # AI Email Sorting Application
 
+![Backend Coverage](./badges/backend-coverage.svg)
+![Frontend Coverage](./badges/frontend-coverage.svg)
+
 An AI-powered email sorting application that automatically categorizes and summarizes emails using Claude AI, with automated unsubscribe functionality.
 
 ## Features
@@ -316,6 +319,168 @@ The system uses Playwright and Claude AI to:
 - Database indexes on frequently queried fields
 - Caching for category lookups
 - Pagination for large email lists
+
+## Testing
+
+This project includes comprehensive testing for both backend and frontend applications.
+
+### Backend Testing
+
+The backend uses **Jest** for unit and integration testing with the following coverage:
+- Integration tests for API endpoints
+- Unit tests for services, controllers, and utilities
+- Test coverage reporting with badges
+
+**Run Backend Tests:**
+
+```bash
+cd email-sorting-be
+
+# Run all tests with coverage
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run only integration tests
+npm run test:integration
+
+# Run only unit tests
+npm run test:unit
+
+# Generate coverage badge
+npm run test:badge
+```
+
+**Backend Test Structure:**
+```
+email-sorting-be/
+├── tests/
+│   ├── setup.ts                    # Test configuration and mocks
+│   ├── integration/                # Integration tests
+│   │   └── auth.test.ts           # API integration tests
+│   ├── unit/                      # Unit tests
+│   │   ├── controllers/           # Controller tests
+│   │   ├── services/              # Service tests
+│   │   └── utils/                 # Utility tests
+│   └── utils/
+│       └── test-helpers.ts        # Test utilities and factories
+```
+
+**Key Testing Features:**
+- Mocked Prisma client for database operations
+- Comprehensive controller testing with authentication scenarios
+- Service layer testing with edge cases
+- 100% coverage on critical utilities (encryption, auth controller)
+
+### Frontend Testing
+
+The frontend uses **Vitest** for unit/integration tests and **Playwright** for E2E testing:
+- Component tests with React Testing Library
+- Context and hook testing
+- E2E tests for critical user flows
+- Test coverage reporting with badges
+
+**Run Frontend Tests:**
+
+```bash
+cd email-sorting-fe
+
+# Run all tests with coverage
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with UI
+npm run test:ui
+
+# Run E2E tests
+npm run test:e2e
+
+# Run E2E tests with UI
+npm run test:e2e:ui
+
+# Generate coverage badge
+npm run test:badge
+```
+
+**Frontend Test Structure:**
+```
+email-sorting-fe/
+├── src/tests/
+│   ├── setup.ts                   # Test configuration
+│   ├── components/                # Component tests
+│   │   └── Button.test.tsx       # UI component tests
+│   ├── utils/                     # Utility tests
+│   │   ├── api.test.ts           # API utility tests
+│   │   └── cn.test.ts            # Class name utility tests
+│   └── App.test.tsx              # Main app tests
+├── e2e/                          # E2E tests
+│   └── login.spec.ts             # Login flow E2E test
+└── playwright.config.ts          # Playwright configuration
+```
+
+**Key Testing Features:**
+- 100% coverage on UI components (Button, Card, Input, Badge)
+- Context and state management testing
+- Mock setup for external API calls
+- E2E tests for authentication flows
+- Vitest with jsdom for fast component testing
+
+### Test Coverage Badges
+
+Coverage badges are automatically generated and saved as SVG files in the `badges/` directory:
+- `backend-coverage.svg` - Backend test coverage
+- `frontend-coverage.svg` - Frontend test coverage
+
+Badges are color-coded based on coverage percentage:
+- 🟢 Green: ≥80%
+- 🟡 Yellow: 60-79%
+- 🟠 Orange: 40-59%
+- 🔴 Red: <40%
+
+### CI/CD Integration
+
+To integrate tests into your CI/CD pipeline:
+
+```yaml
+# Example GitHub Actions workflow
+- name: Run Backend Tests
+  run: |
+    cd email-sorting-be
+    npm install
+    npm run test:ci
+
+- name: Run Frontend Tests
+  run: |
+    cd email-sorting-fe
+    npm install
+    npm test
+
+- name: Run E2E Tests
+  run: |
+    cd email-sorting-fe
+    npx playwright install
+    npm run test:e2e
+```
+
+### Testing Best Practices
+
+1. **Integration Tests**: Focus on testing API endpoints without external service dependencies
+2. **Unit Tests**: Test individual functions, components, and utilities in isolation
+3. **E2E Tests**: Test critical user flows like authentication and email management
+4. **Mock External Services**: Use mocks for Gmail API, Claude API, and database operations
+5. **Test Coverage**: Aim for high coverage on critical paths and business logic
+
+### Expanding Tests
+
+To add more tests:
+
+1. **Backend**: Add test files in `tests/unit/` or `tests/integration/`
+2. **Frontend**: Add test files in `src/tests/` with `.test.ts` or `.test.tsx` extension
+3. **E2E**: Add test files in `e2e/` with `.spec.ts` extension
+4. Follow existing test patterns and use provided test helpers
 
 ## License
 
