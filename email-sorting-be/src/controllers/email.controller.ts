@@ -188,10 +188,9 @@ export class EmailController {
         // Continue even if Gmail deletion fails
       }
 
-      // Mark as deleted in database
-      await prisma.email.update({
+      // Delete from database (hard delete like Gmail)
+      await prisma.email.delete({
         where: { id },
-        data: { isDeleted: true },
       });
 
       logger.info(`Email deleted: ${id}`);
@@ -238,13 +237,12 @@ export class EmailController {
         errors: [] as Array<{ id: string; error: string }>,
       };
 
-      // Delete from Gmail and mark as deleted
+      // Delete from Gmail and database (hard delete)
       for (const email of emails) {
         try {
           await gmailService.deleteEmail(email.gmailMessageId, user.accessToken, user.refreshToken);
-          await prisma.email.update({
+          await prisma.email.delete({
             where: { id: email.id },
-            data: { isDeleted: true },
           });
           results.success++;
         } catch (error) {

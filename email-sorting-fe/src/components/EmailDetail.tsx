@@ -10,9 +10,10 @@ import type { AxiosError } from 'axios';
 interface EmailDetailProps {
   email: Email;
   onClose: () => void;
+  onEmailChanged?: () => void; // Callback when email is deleted or unsubscribed
 }
 
-export default function EmailDetail({ email, onClose }: EmailDetailProps) {
+export default function EmailDetail({ email, onClose, onEmailChanged }: EmailDetailProps) {
   const [alertModal, setAlertModal] = useState<{ open: boolean; title: string; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({
     open: false,
     title: '',
@@ -55,6 +56,7 @@ export default function EmailDetail({ email, onClose }: EmailDetailProps) {
         try {
           await emailsApi.delete(email.id);
           setConfirmModal(prev => ({ ...prev, loading: false, open: false }));
+          onEmailChanged?.(); // Trigger email list reload
           setAlertModal({
             open: true,
             title: 'Success',
@@ -99,6 +101,7 @@ export default function EmailDetail({ email, onClose }: EmailDetailProps) {
         try {
           await processApi.unsubscribe(email.id);
           setConfirmModal(prev => ({ ...prev, loading: false, open: false }));
+          onEmailChanged?.(); // Trigger email list reload (email may be updated)
           setAlertModal({
             open: true,
             title: 'Success',

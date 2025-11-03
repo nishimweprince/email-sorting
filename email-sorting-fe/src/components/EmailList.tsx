@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AlertModal from '@/components/ui/alert-modal';
 import ConfirmModal from '@/components/ui/confirm-modal';
+import EmailListSkeleton from '@/components/EmailListSkeleton';
+import PaginationFooter from '@/components/PaginationFooter';
 import type { Email } from '@/types';
 import type { AxiosError } from 'axios';
 
@@ -12,12 +14,16 @@ interface EmailListProps {
   categoryId: string | null;
   onSelectEmail: (email: Email) => void;
   selectedEmailId?: string;
+  reloadTrigger?: number; // When this changes, emails will be reloaded
 }
 
-export default function EmailList({ categoryId, onSelectEmail, selectedEmailId }: EmailListProps) {
+export default function EmailList({ categoryId, onSelectEmail, selectedEmailId, reloadTrigger }: EmailListProps) {
   const { selectedEmails, selectEmail, deselectEmail, selectAllEmails, deselectAllEmails } = useApp();
   const [emails, setEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [totalEmails, setTotalEmails] = useState(0);
   const [alertModal, setAlertModal] = useState<{ open: boolean; title: string; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({
     open: false,
     title: '',
@@ -36,20 +42,36 @@ export default function EmailList({ categoryId, onSelectEmail, selectedEmailId }
   const loadEmails = useCallback(async () => {
     setLoading(true);
     try {
+      const offset = (currentPage - 1) * pageSize;
       const response = categoryId
-        ? await emailsApi.getByCategory(categoryId)
-        : await emailsApi.getAll();
+        ? await emailsApi.getByCategory(categoryId, { limit: pageSize, offset })
+        : await emailsApi.getAll({ limit: pageSize, offset });
       setEmails(response.data.emails || response.data);
+      setTotalEmails(response.data.total || 0);
     } catch (error) {
       console.error('Failed to load emails', error);
     } finally {
       setLoading(false);
     }
-  }, [categoryId]);
+  }, [categoryId, currentPage, pageSize]);
 
   useEffect(() => {
     loadEmails();
-  }, [categoryId, loadEmails]);
+  }, [categoryId, loadEmails, reloadTrigger]);
+
+  // Reset to page 1 when category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryId]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
 
   const handleSelectAll = () => {
     if (selectedEmails.length === emails.length) {
@@ -125,11 +147,7 @@ export default function EmailList({ categoryId, onSelectEmail, selectedEmailId }
   };
 
   if (loading) {
-    return (
-      <section className="flex-1 flex items-center justify-center">
-        <p className="text-gray-500">Loading emails...</p>
-      </section>
-    );
+    return <EmailListSkeleton />;
   }
 
   return (
@@ -241,6 +259,15 @@ export default function EmailList({ categoryId, onSelectEmail, selectedEmailId }
           ))
         )}
       </ul>
+      {totalEmails > 0 && (
+        <PaginationFooter
+          currentPage={currentPage}
+          pageSize={pageSize}
+          totalItems={totalEmails}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      )}
       <AlertModal
         open={alertModal.open}
         onClose={() => setAlertModal({ ...alertModal, open: false })}

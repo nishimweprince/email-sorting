@@ -11,6 +11,12 @@ export default function Dashboard() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [reloadTrigger, setReloadTrigger] = useState(0);
+
+  // Function to trigger email list reload
+  const triggerReload = () => {
+    setReloadTrigger(prev => prev + 1);
+  };
 
   const handleLogout = async () => {
     try {
@@ -43,6 +49,7 @@ export default function Dashboard() {
             setSelectedCategoryId(id);
             setSidebarOpen(false);
           }}
+          onEmailsChanged={triggerReload}
         />
       </div>
 
@@ -86,6 +93,7 @@ export default function Dashboard() {
               categoryId={selectedCategoryId}
               onSelectEmail={setSelectedEmail}
               selectedEmailId={selectedEmail?.id}
+              reloadTrigger={reloadTrigger}
             />
           </div>
 
@@ -97,6 +105,7 @@ export default function Dashboard() {
               <EmailDetail
                 email={selectedEmail}
                 onClose={() => setSelectedEmail(null)}
+                onEmailChanged={triggerReload}
               />
             </div>
           )}

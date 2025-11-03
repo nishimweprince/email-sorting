@@ -44,7 +44,8 @@ export const emailsApi = {
 
 // Processing
 export const processApi = {
-  syncEmails: (maxResults?: number) => api.post('/process/sync', { maxResults }),
+  syncEmails: (maxResults?: number, includeSpam?: boolean, includeTrash?: boolean) =>
+    api.post('/process/sync', { maxResults, includeSpam, includeTrash }),
   categorizeEmail: (emailId: string) => api.post('/process/categorize', { emailId }),
   unsubscribe: (emailId: string) => api.post('/process/unsubscribe', { emailId }),
   bulkUnsubscribe: (emailIds: string[]) =>
