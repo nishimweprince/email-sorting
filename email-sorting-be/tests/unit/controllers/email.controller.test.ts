@@ -1,12 +1,14 @@
 import { EmailController } from '../../../src/controllers/email.controller';
 import { createMockAuthRequest, createMockResponse, createMockEmail, createMockUser, createMockCategory } from '../../utils/test-helpers';
 import { prisma } from '../../../src/services/prisma.service';
+import { gmailService } from '../../../src/services/gmail.service';
 
 jest.mock('../../../src/services/prisma.service');
+jest.mock('../../../src/services/gmail.service');
 
 describe('EmailController', () => {
   let emailController: EmailController;
-  const mockPrisma = prisma as jest.Mocked<typeof prisma>;
+  const mockPrisma = prisma as any;
 
   beforeAll(() => {
     emailController = new EmailController();
@@ -37,8 +39,8 @@ describe('EmailController', () => {
       expect(res.json).toHaveBeenCalledWith({
         emails: mockEmails,
         total: 2,
-        page: 1,
-        totalPages: 1,
+        limit: 10,
+        offset: 0,
       });
     });
 
@@ -116,6 +118,8 @@ describe('EmailController', () => {
       const email = createMockEmail(user.id);
 
       mockPrisma.email.findUnique.mockResolvedValue(email);
+      mockPrisma.user.findUnique.mockResolvedValue(user);
+      (gmailService.deleteEmail as jest.Mock).mockResolvedValue(undefined);
       mockPrisma.email.delete.mockResolvedValue(email);
 
       const req = createMockAuthRequest(user);
@@ -151,8 +155,12 @@ describe('EmailController', () => {
     it('should delete multiple emails', async () => {
       const user = createMockUser();
       const emailIds = ['id1', 'id2', 'id3'];
+      const emails = emailIds.map(id => createMockEmail(user.id, { id }));
 
-      mockPrisma.email.deleteMany.mockResolvedValue({ count: 3 });
+      mockPrisma.user.findUnique.mockResolvedValue(user);
+      mockPrisma.email.findMany.mockResolvedValue(emails);
+      (gmailService.deleteEmail as jest.Mock).mockResolvedValue(undefined);
+      mockPrisma.email.delete.mockResolvedValue(emails[0]);
 
       const req = createMockAuthRequest(user);
       req.body = { emailIds };
@@ -160,15 +168,16 @@ describe('EmailController', () => {
 
       await emailController.bulkDelete(req as any, res as any);
 
-      expect(mockPrisma.email.deleteMany).toHaveBeenCalledWith({
+      expect(mockPrisma.email.findMany).toHaveBeenCalledWith({
         where: {
           id: { in: emailIds },
           userId: user.id,
         },
       });
       expect(res.json).toHaveBeenCalledWith({
-        message: 'Emails deleted successfully',
-        count: 3,
+        success: 3,
+        failed: 0,
+        errors: [],
       });
     });
 

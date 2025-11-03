@@ -30,9 +30,4 @@ module.exports = {
   },
   testTimeout: 30000,
   maxWorkers: 1, // Run tests sequentially for database consistency
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.test.json',
-    },
-  },
 };

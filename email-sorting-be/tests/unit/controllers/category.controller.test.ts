@@ -7,7 +7,7 @@ jest.mock('../../../src/services/prisma.service');
 
 describe('CategoryController', () => {
   let categoryController: CategoryController;
-  const mockPrisma = prisma as jest.Mocked<typeof prisma>;
+  const mockPrisma = prisma as any;
 
   beforeAll(() => {
     categoryController = new CategoryController();
@@ -34,7 +34,12 @@ describe('CategoryController', () => {
 
       expect(mockPrisma.category.findMany).toHaveBeenCalledWith({
         where: { userId: user.id },
-        orderBy: { createdAt: 'desc' },
+        include: {
+          _count: {
+            select: { emails: true },
+          },
+        },
+        orderBy: { createdAt: 'asc' },
       });
       expect(res.json).toHaveBeenCalledWith(mockCategories);
     });
@@ -58,7 +63,7 @@ describe('CategoryController', () => {
       await categoryController.getCategories(req as any, res as any);
 
       expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Unauthorized' });
+      expect(res.json).toHaveBeenCalledWith({ error: 'Not authenticated' });
     });
 
     it('should handle database errors', async () => {
@@ -71,7 +76,7 @@ describe('CategoryController', () => {
       await categoryController.getCategories(req as any, res as any);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Failed to retrieve categories' });
+      expect(res.json).toHaveBeenCalledWith({ error: 'Failed to fetch categories' });
     });
   });
 
@@ -127,7 +132,9 @@ describe('CategoryController', () => {
 
     it('should handle duplicate category names', async () => {
       const user = createMockUser();
-      mockPrisma.category.create.mockRejectedValue({ code: 'P2002' });
+      const existingCategory = createMockCategory(user.id, { name: 'Existing' });
+      
+      mockPrisma.category.findUnique.mockResolvedValue(existingCategory);
 
       const req = createMockAuthRequest(user);
       req.body = { name: 'Existing', description: 'Test' };
@@ -135,6 +142,14 @@ describe('CategoryController', () => {
 
       await categoryController.createCategory(req as any, res as any);
 
+      expect(mockPrisma.category.findUnique).toHaveBeenCalledWith({
+        where: {
+          userId_name: {
+            userId: user.id,
+            name: 'Existing',
+          },
+        },
+      });
       expect(res.status).toHaveBeenCalledWith(409);
       expect(res.json).toHaveBeenCalledWith({ error: 'Category with this name already exists' });
     });
@@ -193,7 +208,7 @@ describe('CategoryController', () => {
       await categoryController.updateCategory(req as any, res as any);
 
       expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Not authorized to update this category' });
+      expect(res.json).toHaveBeenCalledWith({ error: 'Forbidden' });
     });
   });
 
@@ -245,7 +260,7 @@ describe('CategoryController', () => {
       await categoryController.deleteCategory(req as any, res as any);
 
       expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.json).toHaveBeenCalledWith({ error: 'Not authorized to delete this category' });
+      expect(res.json).toHaveBeenCalledWith({ error: 'Forbidden' });
     });
   });
 });
