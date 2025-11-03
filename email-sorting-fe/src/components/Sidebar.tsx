@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useApp } from '@/contexts/useAppContext';
 import { processApi } from '@/utils/api';
 import CategoryModal from './CategoryModal';
+import SyncModal from './SyncModal';
 import AlertModal from '@/components/ui/alert-modal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,11 +11,13 @@ import type { AxiosError } from 'axios';
 interface SidebarProps {
   selectedCategoryId: string | null;
   onSelectCategory: (id: string | null) => void;
+  onEmailsChanged?: () => void; // Callback when emails are synced
 }
 
-export default function Sidebar({ selectedCategoryId, onSelectCategory }: SidebarProps) {
+export default function Sidebar({ selectedCategoryId, onSelectCategory, onEmailsChanged }: SidebarProps) {
   const { categories, refreshCategories } = useApp();
   const [showModal, setShowModal] = useState(false);
+  const [showSyncModal, setShowSyncModal] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [showSyncDisclaimer, setShowSyncDisclaimer] = useState(false);
   const [alertModal, setAlertModal] = useState<{ open: boolean; title: string; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({
@@ -24,11 +27,13 @@ export default function Sidebar({ selectedCategoryId, onSelectCategory }: Sideba
     type: 'info'
   });
 
-  const handleSync = async () => {
+  const handleSync = async (maxResults: number, includeSpam: boolean, includeTrash: boolean) => {
     setSyncing(true);
+    setShowSyncModal(false); // Close the modal
     try {
-      await processApi.syncEmails(50);
+      await processApi.syncEmails(maxResults, includeSpam, includeTrash);
       await refreshCategories(); // Refetch categories after successful sync
+      onEmailsChanged?.(); // Trigger email list reload
       setShowSyncDisclaimer(true);
       onSelectCategory(null);
     } catch (error: unknown) {
@@ -47,7 +52,7 @@ export default function Sidebar({ selectedCategoryId, onSelectCategory }: Sideba
     <aside className="w-[280px] sm:w-[320px] h-full bg-white border-r border-gray-200 flex flex-col overflow-hidden shadow-lg lg:shadow-none">
       <section className="p-3 sm:p-4">
         <Button
-          onClick={handleSync}
+          onClick={() => setShowSyncModal(true)}
           disabled={syncing}
           className="w-full bg-primary-400 hover:bg-primary-500 text-sm sm:text-base"
           size="sm"
@@ -115,7 +120,15 @@ export default function Sidebar({ selectedCategoryId, onSelectCategory }: Sideba
           onSuccess={() => {
             setShowModal(false);
             refreshCategories();
+            onEmailsChanged?.(); // Trigger email list reload (categories updated)
           }}
+        />
+      )}
+      {showSyncModal && (
+        <SyncModal
+          onClose={() => setShowSyncModal(false)}
+          onConfirm={handleSync}
+          loading={syncing}
         />
       )}
       <AlertModal

@@ -14,7 +14,7 @@ export class ProcessController {
         return res.status(401).json({ error: 'Not authenticated' });
       }
 
-      const { maxResults = 50 } = req.body;
+      const { maxResults = 50, includeSpam = false, includeTrash = false } = req.body;
 
       // Get user with tokens
       const user = await prisma.user.findUnique({
@@ -35,11 +35,13 @@ export class ProcessController {
       }
 
       // Fetch emails from Gmail
-      logger.info(`Syncing emails for user ${user.email}`);
+      logger.info(`Syncing emails for user ${user.email} (maxResults: ${maxResults}, includeSpam: ${includeSpam}, includeTrash: ${includeTrash})`);
       const gmailMessages = await gmailService.fetchEmails(
         user.accessToken,
         user.refreshToken,
-        maxResults
+        maxResults,
+        includeSpam,
+        includeTrash
       );
 
       const processed = {
