@@ -29,19 +29,27 @@ export class GmailService {
     try {
       const accessToken = decrypt(encryptedAccessToken);
       const refreshToken = decrypt(encryptedRefreshToken);
+      let includeSpamTrash = false;
 
       const gmail = this.getGmailClient(accessToken, refreshToken);
 
       // Build label IDs based on options
       const labelIds: string[] = ['INBOX'];
-      if (includeSpam) labelIds.push('SPAM');
-      if (includeTrash) labelIds.push('TRASH');
+      if (includeSpam) {
+        includeSpamTrash = true;
+        labelIds.push('SPAM')
+      };
+      if (includeTrash) {
+        includeSpamTrash = true;
+        labelIds.push('TRASH');
+      };
 
       // Get list of message IDs from specified folders
       const response = await gmail.users.messages.list({
         userId: 'me',
         labelIds,
         maxResults,
+        includeSpamTrash
       });
 
       const messages = response.data.messages || [];
